@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <title>
+   Fabric Ticket Booking
+ </title>
+ <link href="style.css" rel="stylesheet"/>
+ <style>
+   body {
+    font-family: Arial, sans-serif;
+    background-color: #e9f0f7;
+    color: #333;
+  }
+  .container {
+    max-width: 960px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+  }
+  h2, h3 {
+    color: #007bff;
+  }
+  input, button {
+    padding: 8px;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+</style>
+</head>
+<body>
+  <script>
+  // Check session validity using express-session (no token!)
+  fetch('/api/validate-session', {
+    method: 'GET',
+    credentials: 'include'  // ✅ VERY IMPORTANT: sends the session cookie
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Not logged in');
+    return response.json();
+  })
+  .then(data => {
+    if (data.role !== 'admin') {
+      // Logged in, but not admin
+      window.location.href = '/index.html';
+    } else {
+      console.log('✅ Admin session valid for:', data.userId);
+      // Continue loading admin dashboard...
+    }
+  })
+  .catch(error => {
+    console.log(error);
+    alert('Session invalid or expired. Please login again.');
+    window.location.href = '/index.html';
+  });
+</script>
+
+  <div class="container">
+   <h2>
+    User Management
+  </h2>
+  <details open="True">
+   <summary>
+    User Management
+  </summary>
+  <div style="padding: 10px 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+    <form id="registerUserForm">
+     <h3>
+      Register User
+    </h3>
+    <input id="userId" placeholder="User ID" readonly="" type="text"/>
+    <input id="name" placeholder="Name" required="" type="text"/>
+    <input id="email" placeholder="Email" required="" type="email"/>
+    <input id="phone" placeholder="Phone" required="" type="text"/>
+    <input id="userPassword" placeholder="Password (default123)" required="" type="password" value="default123"/>
+    <span id="userPasswordToggle" onclick="togglePasswordVisibility('userPassword', 'userPasswordToggle')" style="cursor: pointer; margin-left: 10px;">
+      👁️
+    </span>
+    <label>
+      <input id="isAnonymous" style="width:40px" type="checkbox"/>
+      <span>Anonymous User </span> 
+      
+    </label>
+    <button type="submit">
+      Register
+    </button>
+  </form>
+  <form id="getUserForm">
+   <h3>
+    Get User Info
+  </h3>
+  <input id="getUserId" placeholder="User ID" required="" type="text"/>
+  <button type="submit">
+    Get User
+  </button>
+</form>
+</div>
+</details>
+<pre id="userData"></pre>
+<h2>
+  Provider Management
+</h2>
+<details open="True">
+ <summary>
+  Provider Management
+</summary>
+<div style="padding: 10px 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+ <form id="registerProviderForm">
+  <h3>Register Provider</h3>
+  <input id="providerId" placeholder="Provider ID" readonly type="text" />
+  <input id="providerName" placeholder="Company Name" required type="text" />
+  <input id="providerOwnerName" placeholder="Owner Name" required type="text" />
+  <input id="providerEmail" placeholder="Email" required type="email" />
+  <input id="providerPhone" placeholder="Phone" required type="text" />
+  <input id="providerRating" max="5" min="1" placeholder="Rating (1-5)" required type="number" />
+  <input id="providerPassword" placeholder="Password (default123)" required type="password" value="default123" />
+  <span id="providerPasswordToggle" onclick="togglePasswordVisibility('providerPassword', 'providerPasswordToggle')" style="cursor: pointer; margin-left: 10px;">👁️</span>
+  <label>
+    <input id="providerPublic" style="width:40px" type="checkbox" />
+    Is Public
+  </label>
+  <button type="submit">Register Provider</button>
+</form>
+
+<form id="getProviderForm">
+ <h3>
+  Get Provider Info
+</h3>
+<input id="getProviderId" placeholder="Provider ID" required="" type="text"/>
+<button type="submit">
+  Get Provider
+</button>
+</form>
+<pre id="providerData"></pre>
+<div>
+  <form>
+   <h3>
+    🚍 All Registered Providers
+  </h3>
+  <button id="loadallproviderbutton">Load All Providers</button>
+   <div id="allprovinfo" style="display: none;">
+  <input id="providerSearch" placeholder="Search by name or type" style="width: 50%; padding: 6px; margin-bottom: 10px;" type="text"/>
+  <table id="allProvidersTable"class="styled-table" style="width: 100%">
+    <thead>
+     <tr>
+      <th>
+       Name
+     </th>
+     <th>
+       Rating ⭐
+     </th>
+     <th>
+       Transport Types
+     </th>
+   </tr>
+ </thead>
+ <tbody>
+ </tbody>
+</table>
+</div>
+</form>
+<form id="adjustWalletForm">
+  <h3>
+   Adjust User Wallet
+ </h3>
+ <input id="adjustUserId" placeholder="User ID" required="" type="text"/>
+ <input id="adjustAmount" placeholder="Amount (+ to add, - to deduct)" required="" type="number"/>
+ <button type="submit">
+   Update Wallet
+ </button>
+</form>
+<div>
+  <form>
+    <h3>
+     📋 All Registered Users
+   </h3>
+   <button id="loadalluserbutton">Load All Users</button>
+   <div id="alluserinfo" style="display: none;">
+     <input id="userSearch" placeholder="Search name or email" style="width: 50%; padding: 6px; margin-bottom: 10px;" type="text"/>
+
+
+     <table id="allUsersTable" class="styled-table" style="width: 100%; border-collapse: collapse;">
+       <thead>
+        <tr>
+         <th>
+          Name
+        </th>
+        <th>
+          Email
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+</form>
+</div>
+<form id="getUserBookingsForm">
+  <h3>
+   View All Bookings by User ID
+ </h3>
+ <input id="userBookingsId" placeholder="Enter User ID" required="" type="text"/>
+ <button type="submit">
+   Get Bookings
+ </button>
+</form>
+<div id="userBookingsContainer" style="overflow-x: auto; max-height: 400px; display: none; margin-top: 15px;">
+  <table id="userBookingsTable" class="styled-table" style="width:100%; border-collapse: collapse;">
+   <thead>
+    <tr>
+     <th>
+      Booking ID
+    </th>
+    <th>
+      Source
+    </th>
+    <th>
+      Destination
+    </th>
+    <th>
+      Departure
+    </th>
+    <th>
+      Seat
+    </th>
+    <th>
+      Price Paid
+    </th>
+    <th>
+      Status
+    </th>
+    <th>
+      Transport
+    </th>
+    <th>
+      Provider
+    </th>
+    <th>
+      Rating
+    </th>
+    <th>
+      Actions
+    </th>
+  </tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+<button id="forceConfirmBookingButton">
+  Force Confirm All Pending
+</button>
+</div>
+</div>
+</details>
+
+<script src="admin.js">
+</script>
+<button id="logoutBtn" style="margin: 10px; background-color: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; float: right;">
+  🚪 Logout
+</button>
+<script>
+  document.getElementById('logoutBtn').onclick = async () => {
+    await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    window.location.href = 'index.html';
+  };
+</script>
+
+</div>
+
+
+<script>
+ function togglePasswordVisibility(id, toggleId) {
+  const input = document.getElementById(id);
+  const toggle = document.getElementById(toggleId);
+  if (input.type === "password") {
+    input.type = "text";
+    toggle.textContent = 'HIDE';
+  } else {
+    input.type = "password";
+    toggle.textContent = 'SHOW';
+  }
+}
+</script>
+
+
+</body>
+</html>

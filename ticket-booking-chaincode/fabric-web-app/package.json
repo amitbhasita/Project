@@ -1,0 +1,24 @@
+{
+  "name": "fabric-web-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "connect-mongo": "^5.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "fabric-common": "^2.2.20",
+    "fabric-network": "^2.2.20",
+    "fabric-protos": "^2.2.20",
+    "mongoose": "^8.13.2",
+    "node-fetch": "^2.7.0"
+  }
+}

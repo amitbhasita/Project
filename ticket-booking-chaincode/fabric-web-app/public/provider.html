@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabric Ticket Booking</title>
+    <link rel="stylesheet" href="style.css">
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+ <script>
+  fetch('/api/validate-session', {
+    method: 'GET',
+    credentials: 'include'
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Not logged in');
+    return response.json();
+  })
+  .then(data => {
+    if (data.role !== 'provider') {
+      window.location.href = '/index.html';
+    } else {
+      console.log('✅ Provider session valid for:', data.userId);
+    }
+  })
+  .catch(() => {
+    alert('Session invalid or expired. Please login again.');
+    window.location.href = '/index.html';
+  });
+</script>
+
+
+
+<div class="container">
+    <form id="deleteProviderForm">
+      <h3>Delete Provider (Cascade Delete)</h3>
+      <input type="text" id="deleteProviderId" placeholder="Provider ID" required>
+      <button type="submit">Delete Provider</button>
+  </form>
+  <form id="updateProviderForm">
+      <h3>Update Provider</h3>
+      <input type="text" id="updateProviderId" placeholder="Provider ID" required>
+      <input type="text" id="updateProviderName" placeholder="New Name">
+      <input type="text" id="updateProviderOwner" placeholder="Owner Name">
+      <input type="text" id="updateProviderPhone" placeholder="Phone Number" pattern="\d{10}" title="Enter a 10-digit phone number">
+      <input type="number" id="updateProviderRating" placeholder="Rating (1–5)" min="1" max="5">
+      <label><input type="checkbox" id="updateProviderPublic"> Is Public</label>
+      <button type="submit">Update Provider</button>
+  </form>
+
+
+  <form id="getTransportsByProviderForm">
+      <h3>View Transports Under a Provider</h3>
+      <input type="text" id="providerTransportId" placeholder="Enter Provider ID" required>
+      <button type="submit">Get Transports</button>
+  </form>
+
+  <table id="providerTransportTable" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+      <thead>
+        <tr>
+          <th>Transport Type</th>
+          <th>Transport ID</th>
+          <th>Action</th>
+      </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<form id="getSchedulesByProviderForm">
+  <h3>📅 View All Schedules by Provider</h3>
+  <input type="text" id="scheduleProviderId" placeholder="Enter Provider ID" required>
+  <button type="submit">Get Schedules</button>
+</form>
+
+<!-- Filters -->
+<div id="scheduleFilterBar" style="margin-top: 10px;">
+  <input type="text" id="scheduleSearch" placeholder="Search by source, dest, type, day">
+  <label>Sort by:</label>
+  <select id="scheduleSortField">
+    <option value="departure">Departure</option>
+    <option value="currentPrice">Price</option>
+    <option value="vacant">Vacant Seats</option>
+    <option value="booked">Booked Seats</option>
+    <option value="transportType">Transport Type</option>
+</select>
+<select id="scheduleSortDir">
+    <option value="asc">↑ Asc</option>
+    <option value="desc">↓ Desc</option>
+</select>
+</div>
+
+<!-- Table -->
+<table id="providerScheduleTable" style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th>From</th>
+      <th>To</th>
+      <th>Departure</th>
+      <th>Vacant</th>
+      <th>Booked</th>
+      <th>Price</th>
+      <th>Type</th>
+      <th>Actions</th>
+  </tr>
+</thead>
+<tbody></tbody>
+</table>
+
+
+<h2>Transport Management</h2>
+<form id="addTransportForm">
+    <h3>Add Transport</h3>
+    <input type="text" id="transportId" placeholder="Transport ID" readonly>
+    <input type="text" id="transportProviderId" placeholder="Provider ID" required>
+    <select id="transportType" required>
+        <option value="">Select Type</option>
+        <option value="plane">Plane</option>
+        <option value="train">Train</option>
+        <option value="bus">Bus</option>
+    </select>
+    <button type="submit">Add Transport</button>
+</form>
+
+
+
+<form id="getTransportForm">
+    <h3>Get Transport Info</h3>
+    <input type="text" id="getTransportId" placeholder="Transport ID" required>
+    <button type="submit">Get Transport</button>
+</form>
+<pre id="transportData"></pre>
+
+<form id="deleteTransportForm">
+ <h3>Delete Transport (and related Schedules)</h3>
+ <input type="text" id="deleteTransportId" placeholder="Transport ID" required>
+ <button type="submit">Delete Transport</button>
+</form>
+
+
+
+<h2>Schedule Management</h2>
+<form id="createScheduleForm">
+    <h3>Create Schedule</h3>
+    <input type="text" id="scheduleId" placeholder="Schedule ID" readonly>
+    <input type="text" id="scheduleTransportId" placeholder="Transport ID" required>
+    <input type="datetime-local" id="scheduleDeparture" required>
+    <input type="text" id="scheduleSource" placeholder="Source" required>
+    <input type="text" id="scheduleDestination" placeholder="Destination" required>
+    <input type="number" id="scheduleSeats" placeholder="Total Seats" required>
+    <input type="number" id="schedulePrice" placeholder="Base Price" required>
+    <button type="submit">Create Schedule</button>
+</form>
+
+
+
+<form id="getScheduleForm">
+    <h3>Get Schedule Info</h3>
+    <input type="text" id="getScheduleId" placeholder="Schedule ID" required>
+    <button type="submit">Get Schedule</button>
+</form>
+<form id="deleteScheduleForm">
+ <h3>Delete Schedule (Refunds Issued)</h3>
+ <input type="text" id="deleteScheduleId" placeholder="Schedule ID" required>
+ <button type="submit">Delete Schedule</button>
+</form>
+
+<form id="modifyScheduleForm">
+    <h3>Modify Schedule</h3>
+    <input type="text" id="modifyScheduleId" placeholder="Schedule ID" required>
+    <input type="datetime-local" id="modifyScheduleDate" required>
+    <input type="number" id="modifySchedulePrice" placeholder="New Fare" required>
+    <input type="number" id="modifyScheduleSeats" placeholder="Add Seats" required>
+    <button type="submit">Update Schedule</button>
+</form>
+
+
+<form id="verifyTicketForm">
+    <h3>Verify Ticket</h3>
+    <input type="text" id="verifyBookingId" placeholder="Booking ID" required>
+    <button type="submit">Verify</button>
+</form>
+<pre id="verifyTicketData"></pre>
+
+
+
+<form>
+    <button id="logoutBtn">Logout</button>
+    <!-- <button id="deleteUserAccount">Delete Account</button> -->
+</form>
+
+</div>
+
+<script src="provider.js"></script>
+</body>
+</html>

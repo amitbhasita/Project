@@ -1,0 +1,16 @@
+ticket-booking-chaincode/
+├── fabric-web-app
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── public
+│   │   ├── app.js
+│   │   ├── index.html
+│   │   └── style.css
+│   ├── server.js
+│   └── wallet
+│       └── admin.id
+├── go.mod
+├── go.sum
+└── main.go
+
+3 directories, 10 files

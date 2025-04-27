@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Ticket Booking DApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    form {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <form id="loginForm">
+    <h2>🔐 Login</h2>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Login</button>
+    <div class="error" id="errorMsg"></div>
+    <div>
+    <label id="captchaQuestion">Loading...</label>
+    <input type="number" id="captchaAnswer" placeholder="Enter answer" required />
+  </div>
+
+  </form>
+
+
+  <script>
+  let a, b;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Generate random numbers for captcha
+    a = Math.floor(Math.random() * 10) + 1;
+    b = Math.floor(Math.random() * 10) + 1;
+    document.getElementById('captchaQuestion').textContent = `What is ${a} + ${b}?`;
+  });
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userAnswer = parseInt(document.getElementById('captchaAnswer').value);
+    if (userAnswer !== a + b) {
+      alert("❌ CAPTCHA failed. Try again.");
+      return;
+    }
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const errorMsg = document.getElementById("errorMsg");
+    errorMsg.textContent = "";
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        credentials: "include",  // ✅ include session cookie
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        errorMsg.textContent = data.message || "Login failed";
+        return;
+      }
+
+      // ✅ No need to store token in localStorage anymore
+
+      // Redirect based on role
+      const role = data.role;
+      if (role === "admin") window.location.href = "admin.html";
+      else if (role === "user") window.location.href = "user.html";
+      else if (role === "provider") window.location.href = "provider.html";
+      else errorMsg.textContent = "Unknown role detected";
+
+    } catch (err) {
+      errorMsg.textContent = "Network or server error";
+    }
+  });
+</script>
+
+
+  <style>
+    #captchaQuestion {
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+  </style>
+
+</body>
+</html>

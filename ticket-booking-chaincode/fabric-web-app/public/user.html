@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabric Ticket Booking</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+  <script>
+  fetch('/api/validate-session', {
+    method: 'GET',
+    credentials: 'include'  // ✅ send session cookie
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Not logged in');
+    return response.json();
+  })
+  .then(data => {
+    if (data.role !== 'user') {
+      window.location.href = '/index.html';
+    } else {
+      console.log('✅ User session valid for:', data.userId);
+    }
+  })
+  .catch(() => {
+    alert('Session invalid or expired. Please login again.');
+    window.location.href = '/index.html';
+  });
+</script>
+
+
+
+<div class="container">
+    <form id="updateUserForm">
+        <h3>Update User</h3>
+        <input type="text" id="updateUserId" placeholder="User ID" required>
+        <input type="text" id="updateName" placeholder="New Name">
+        <!-- <input type="email" id="updateEmail" placeholder="New Email"> -->
+        <input type="text" id="updatePhone" placeholder="New Phone">
+        <label><input type="checkbox" id="updateIsAnonymous"> Anonymous</label>
+        <button type="submit">Update User</button>
+    </form>
+
+
+    <form id="deleteUserForm">
+        <h3>Delete User</h3>
+        <input type="text" id="deleteUserId" placeholder="User ID" required>
+        <button type="submit">Delete</button>
+    </form>
+
+
+
+    <form id="getAvailableSchedulesForm">
+        <h3>Get Available Schedules</h3>
+        <input type="text" name="scheduleSource" id="scheduleSource" placeholder="Source" required>
+        <input type="text" name="scheduleDestination" id="scheduleDestination" placeholder="Destination" required>
+        <button type="submit">Search Schedules</button>
+    </form>
+
+    <div id="seatPickerSection" style="display: none; margin-top: 30px;">
+      <h3>Select a Seat</h3>
+      <div id="availableSeatsGrid" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;"></div>
+      <p>Selected Seat: <strong id="selectedSeatLabel">None</strong></p>
+
+      <button id="multiBookBtn" style="display: block; margin-top: 10px;">
+          ✅ Book Selected Seats
+      </button>
+
+  </div>
+
+  <div id="scheduleControls" class="section" style="margin-top: 10px;">
+      <h3>🔍 Search, Sort & Filter</h3>
+
+      <input type="text" id="scheduleSearchInput" placeholder="Search (provider, type, day)" style="width: 40%; padding: 8px;">
+
+      <label>Sort by:</label>
+      <select id="sortField">
+          <option value="departure">Departure Time</option>
+          <option value="currentPrice">Price</option>
+          <option value="vacantCount">Vacant Seats</option>
+          <option value="bookedCount">Booked Seats</option>
+          <option value="providerRating">Provider Rating</option>
+          <option value="transportType">Transport Type</option>
+      </select>
+
+
+      <select id="sortDirection">
+        <option value="asc">↑ Ascending</option>
+        <option value="desc">↓ Descending</option>
+    </select>
+
+    <label><input type="checkbox" id="onlyAvailable"> Only Available</label>
+
+    <label>Type:</label>
+    <select id="filterType">
+        <option value="all">All</option>
+        <option value="bus">Bus</option>
+        <option value="train">Train</option>
+        <option value="plane">Plane</option>
+    </select>
+
+    <label>Max Price:</label>
+    <input type="number" id="maxPriceFilter" placeholder="e.g. 500" style="width: 100px;">
+
+    <label>From:</label>
+    <input type="date" id="fromDateFilter">
+
+    <label>To:</label>
+    <input type="date" id="toDateFilter">
+</div>
+
+
+<div id="scheduleTableContainer" class="table-responsive table-striped">
+  <table id="scheduleTable" >
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Destination</th>
+        <th>Date & Time</th>
+        <th>Vacant Seats</th>
+        <th>Booked Seats</th>
+        <th>Current Price</th>
+        <th>Transport</th>
+        <th>Action</th>
+    </tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+
+</table>
+
+
+
+
+<form id="bookTicketForm">
+    <h3>Book Ticket</h3>
+    <input type="text" id="bookingId" name="bookingId" placeholder="Booking ID" readonly>
+
+    <input type="text" id="bookingUserId" placeholder="User ID" required>
+    <input type="text" id="bookingScheduleId" placeholder="Schedule ID" required>
+    <input type="text" id="bookingSeatNumber" placeholder="Seat Number" required>
+    <button type="submit">Book Ticket</button>
+</form>
+<form id="cancelTicketForm">
+    <h3>Cancel Ticket</h3>
+    <input type="text" id="cancelBookingId" placeholder="Booking ID" required>
+    <button type="submit">Cancel Ticket</button>
+</form>
+<form id="modifyTicketForm">
+    <h3>Modify Ticket (Change Schedule)</h3>
+    <input type="text" id="modifyOldBookingId" placeholder="Old Booking ID" required>
+    <input type="text" id="modifyNewBookingId" name="modifyNewBookingId" placeholder="New Booking ID" readonly>
+
+    <input type="text" id="newScheduleId" placeholder="New Schedule ID" required>
+    <input type="text" id="newSeatNumber" placeholder="New Seat Number" required>
+    <button type="submit">Modify Ticket</button>
+</form>
+<button id="cancelModifyBtn" type="button" style="display: none; background-color: #f44336;">
+  ❌ Cancel Modify Mode
+</button>
+
+
+
+
+<form id="getUserBookingsForm">
+    <h3>View All Bookings by User ID</h3>
+    <input type="text" id="userBookingsId" placeholder="Enter User ID" required>
+    <button type="submit">Get Bookings</button>
+</form>
+
+<div id="userBookingControls" class="section" style="margin-top: 20px;">
+    <h3>🔍 Search, Sort & Filter Bookings</h3>
+
+    <input type="text" id="bookingSearchInput" placeholder="Search (source, destination, provider, transport)" style="width: 40%; padding: 8px;">
+
+    <label>Sort by:</label>
+    <select id="bookingSortField">
+        <option value="departure">Departure Time</option>
+        <option value="pricePaid">Price Paid</option>
+        <option value="status">Status</option>
+        <option value="rating">Provider Rating</option>
+    </select>
+
+    <select id="bookingSortDirection">
+        <option value="asc">↑ Ascending</option>
+        <option value="desc">↓ Descending</option>
+    </select>
+
+    <label>Status:</label>
+    <select id="statusFilter">
+        <option value="all">All</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="pending">Pending</option>
+        <option value="refunded">Refunded</option>
+        <option value="cancelled">Cancelled</option>
+    </select>
+
+    <label>Max Price:</label>
+    <input type="number" id="maxBookingPriceFilter" placeholder="e.g. 500" style="width: 100px;">
+
+    <label>From:</label>
+    <input type="date" id="fromBookingDateFilter">
+
+    <label>To:</label>
+    <input type="date" id="toBookingDateFilter">
+</div>
+
+
+<div id="userBookingsContainer" style="overflow-x: auto; max-height: 400px; display: none; margin-top: 15px;">
+    <table id="userBookingsTable" class="table-responsive table-striped" style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Departure</th>
+                <th>Seat</th>
+                <th>Price Paid</th>
+                <th>Status</th>
+                <th>Transport</th>
+                <th>Provider</th>
+                <th>Rating</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<form>
+    <button id="logoutBtn">Logout</button>
+</form>
+</div>
+
+</div>
+
+<script src="user.js"></script>
+</body>
+</html>
