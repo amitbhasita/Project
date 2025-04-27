@@ -19,7 +19,8 @@ Expected major installations docker, docker-compose, go-lang, node js, npm, mong
 9) In test-network, run the customstart.sh to boot up blockchain
 10) Once success message, go to fabric-web-app folder & start node server.js
 11) you are good to browse localhost:3000
-12) Default admin id is admin@blockchain.com & pass is admin123
-13) To stop server , press ctrl + c in node terminal, sudo systemctl stop mongod.service. In the test-network, run the stopNetwork.sh
-14) We had tunned the project to web.rocketbooking.com
+12) Additionaly we have provided seeding scripts like seed.sh in fabric-web-app folder to seed providers , transport & schedules. run it like bash seed.sh
+13) Default admin id is admin@blockchain.com & pass is admin123
+14) To stop server , press ctrl + c in node terminal, sudo systemctl stop mongod.service. In the test-network, run the stopNetwork.sh
+15) We had tunned the project to web.rocketbooking.com
  
